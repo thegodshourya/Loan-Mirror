@@ -27,6 +27,8 @@ function invalidate(clearFields = false) {
   $('analyze').disabled = !extracted;
 }
 function busy(value) {
+  document.querySelector('.workspace').classList.toggle('is-busy', value);
+  $('status').setAttribute('aria-busy', String(value));
   document.querySelectorAll('input, select:not(#language), button').forEach(el => el.disabled = value);
   if (!value) $('analyze').disabled = !extracted;
 }
@@ -109,7 +111,11 @@ function renderReport(data, scroll = true) {
   $('overrides').append(node('p', 'Document findings compare the extracted source text. Your edited figures affect the cash-flow calculation and are listed here separately.'));
   $('evidence').replaceChildren(evidenceBox('Advertisement', data.ad_evidence), evidenceBox('Loan terms / KFS', data.kfs_evidence));
   status('Report ready. Review any mismatches with your lender.');
-  if (scroll) $('results').scrollIntoView({behavior: 'smooth', block: 'start'});
+  if (scroll) {
+    revealElements([...document.querySelectorAll('#metrics .metric')]);
+    animateElement(document.querySelector('.cost-bar'), [{transform:'scaleX(0)'}, {transform:'scaleX(1)'}], {duration:500});
+    $('results').scrollIntoView({behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start'});
+  }
 }
 async function analyze() {
   if (!extracted) return;

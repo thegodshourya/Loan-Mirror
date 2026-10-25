@@ -429,11 +429,51 @@ function localizePage() {
   document.getElementById('language').value = language;
 }
 
+// Native animations keep the UI usable: text updates immediately and animations never gate work.
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const activeMotion = new WeakMap();
+function animateElement(el, frames, options = {}) {
+  if (!el) return;
+  activeMotion.get(el)?.cancel();
+  if (reducedMotion.matches || !el.animate || window.matchMedia('print').matches) return;
+  const animation = el.animate(frames, {duration: 380, easing: 'cubic-bezier(.2,.7,.2,1)', ...options});
+  activeMotion.set(el, animation);
+}
+function stopMotion() { document.getAnimations().forEach(animation => animation.cancel()); }
+reducedMotion.addEventListener('change', event => { if (event.matches) stopMotion(); });
+window.addEventListener('beforeprint', stopMotion);
+function revealElements(elements) {
+  elements.forEach((el, index) => animateElement(el, [
+    {opacity: .35, transform: 'translateY(10px)'},
+    {opacity: 1, transform: 'translateY(0)'}
+  ], {delay: Math.min(index, 4) * 45}));
+}
+function languageMotion() {
+  document.querySelectorAll('.hero-copy, .hero-example, .workspace, .language-note, .foot').forEach(el => {
+    animateElement(el, [
+      {opacity: .78, filter: 'blur(2px)', transform: 'translateY(3px)'},
+      {opacity: 1, filter: 'blur(0px)', transform: 'translateY(0)'}
+    ], {duration: 240, id: 'language-change'});
+  });
+}
+if ('IntersectionObserver' in window) {
+  const observer = new IntersectionObserver(entries => {
+    const visible = entries.filter(entry => entry.isIntersecting);
+    revealElements(visible.map(entry => entry.target));
+    visible.forEach(entry => observer.unobserve(entry.target));
+  }, {threshold: .12});
+  document.querySelectorAll('.hero-copy, .hero-example, .scenario-row, .doc, .fields').forEach(el => observer.observe(el));
+}
+document.querySelectorAll('details').forEach(el => el.addEventListener('toggle', () => {
+  if (el.open) revealElements([...el.querySelectorAll('.evidence')]);
+}));
+
 // The language control works independently of API startup and calculation code.
 document.getElementById('language').addEventListener('change', event => {
   language = event.target.value;
   try { localStorage.setItem('loanmirror-language', language); } catch {}
   localizePage();
   document.dispatchEvent(new Event('loanmirror:language'));
+  languageMotion();
 });
 localizePage();
