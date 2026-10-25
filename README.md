@@ -14,7 +14,7 @@ python3 -m venv .venv
 .venv/bin/python -m uvicorn server:app --host 127.0.0.1 --port 8000
 ```
 
-Open port 8000 in your browser. Alternatively run `bash run_demo_mac_linux.sh`; Windows users can run `run_demo_windows.bat`.
+Open port 8000 in your browser. The welcome page explains the product; choose **Start comparing** to open `/compare`. Alternatively run `bash run_demo_mac_linux.sh`; Windows users can run `run_demo_windows.bat`.
 
 ## Demo in one minute
 
@@ -83,3 +83,29 @@ Language loading resilience: the homepage uses content-versioned script URLs and
 The web interface now follows the Superdesign concept: forest green and ivory, serif headings, a clearly labelled fictional example, grouped form controls, and a high-contrast cost summary. The layout was checked in English, Hindi and Marathi at widths of 320, 390, 768 and 1440 pixels. All display copy remains local and the app loads no external font or design framework. Original PDF excerpts remain verbatim.
 
 The visual concept is available at https://superdesign.dev/teams/b71eabff-859c-4b23-bba3-ce85f044a439/projects/00be3879-6092-470a-8947-acc3fe4cba87 . This is the design canvas; the working implementation is in this repository.
+
+## Motion
+
+Language switches update text immediately, followed by a 240 ms, 2 px blur/fade. Rapid switches cancel the previous effect. Sections reveal once on entry, result cards appear in sequence, and the cost bar draws in. Layered summary-card shadows, hover/press feedback and a request-only loading pulse complete the effect. All motion respects reduced-motion preferences; active animations are cancelled before printing. No animation library or external asset is needed.
+
+With the app running, use `BASE_URL=http://127.0.0.1:8004 node tests/browser_motion.cjs` to verify rapid switching, data preservation, reduced-motion behavior and print cleanup (Playwright required).
+
+## Public-demo reliability update
+
+The homepage (`/`) now explains LoanMirror, offers English/Hindi/Marathi selection and retains the layered animations. The comparison workflow lives at `/compare`; the logo returns to the welcome page.
+
+PDF fields are extracted only when their complete units and values match supported layouts. Percentage fees, unsupported suffixes, invalid comma grouping and conflicting repeated fields remain blank. Their original lines are retained for manual review. A missing extracted claim is described as unverified extraction rather than proof that the source never stated it.
+
+Amounts support paise (two decimal places), up to INR 1 trillion; tenures are 1–600 whole months and nominal annual rates 0–1000%. Uploaded PDF parsing uses a separate killable process: one worker at a time, 12-second wall timeout, and Unix limits of 256 MB address space and 8 CPU seconds. Requests are capped at 10.5 MB total; each PDF remains capped at 5 MB, 50 pages and 250,000 extracted characters. Busy workers return a retryable response. These bounds improve resilience; they are not a security certification or full operating-system sandbox.
+
+Browser requests time out after 45 seconds, report service/network errors clearly and offer **Try again**. Reports include the source, generation time and verified terms so printed reports preserve the calculation inputs.
+
+Run the Python suite with `python -m pytest tests -q`. For browser checks, start port 8006 and run (with Playwright installed):
+
+```sh
+BASE_URL=http://127.0.0.1:8006/compare node tests/browser_languages.cjs
+BASE_URL=http://127.0.0.1:8006/compare node tests/browser_motion.cjs
+BASE_URL=http://127.0.0.1:8006 node tests/browser_public.cjs
+```
+
+Set `CHROMIUM_PATH` when using an existing Chromium executable. See `AUDIT.md` for the completed checks and limitations.

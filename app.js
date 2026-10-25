@@ -1,6 +1,9 @@
 const $ = id => document.getElementById(id);
 const keys = ['principal', 'annual_nominal_pct', 'months', 'processing_fee', 'fee_tax'];
 const money = n => '₹' + Number(n).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const REQUEST_TIMEOUT_MS = 45000;
+let retryAction = null;
+function offerRetry(action) { retryAction = action; $('retry').hidden = false; }
 let lastStatus = {key: 'Select a sample to begin.', values: {}};
 let currentCase = '03_fee_conflict', extracted = false, report = null;
 function node(tag, text, className) {
@@ -27,6 +30,7 @@ function invalidate(clearFields = false) {
   $('analyze').disabled = !extracted;
 }
 function busy(value) {
+  if (value) $('retry').hidden = true;
   document.querySelector('.workspace').classList.toggle('is-busy', value);
   $('status').setAttribute('aria-busy', String(value));
   document.querySelectorAll('input, select:not(#language), button').forEach(el => el.disabled = value);
@@ -44,12 +48,18 @@ function formData() {
   return form;
 }
 async function request(path, form) {
-  let response;
-  try { response = await fetch(path, form ? {method: 'POST', body: form} : {}); }
-  catch { throw Error('Network request failed. Please try again.'); }
-  const data = await response.json();
-  if (!response.ok) throw Error(typeof data.detail === 'string' ? data.detail : 'Check the required numeric fields and try again.');
-  return data;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    let response;
+    try { response = await fetch(path, {...(form ? {method:'POST', body:form} : {}), signal:controller.signal}); }
+    catch (error) { throw Error(error.name === 'AbortError' ? 'Request timed out. Please try again.' : 'Network request failed. Please try again.'); }
+    let data;
+    try { data = await response.json(); }
+    catch { throw Error('The service returned an unexpected response. Please try again.'); }
+    if (!response.ok) throw Error(typeof data.detail === 'string' ? data.detail : 'Check the required numeric fields and try again.');
+    return data;
+  } finally { clearTimeout(timer); }
 }
 function downloadLinks() {
   for (const [id, kind] of [['adlink', 'advertisement'], ['kfslink', 'kfs']]) {
@@ -73,13 +83,21 @@ async function extract() {
     extracted = true;
     const missing = keys.filter(k => data.terms[k] === undefined);
     status(missing.length ? '{count} fields could not be extracted. Enter them from your document; no values have been assumed.' : 'Fields extracted. Verify the figures and evidence before comparing.', {count: missing.length});
-  } catch (e) { status('Could not extract: {error}', {error: e.message}); }
+  } catch (e) { status('Could not extract: {error}', {error: e.message}); offerRetry(extract); }
   finally { busy(false); }
 }
 function renderReport(data, scroll = true) {
   report = data;
   $('results').hidden = false;
   const m = data.derived;
+  const source = data.source === 'Uploaded document pair' ? t('Uploaded document pair') : t((data.source || currentCase).replaceAll('_',' ').replace(/\b[a-z]/g, ch => ch.toUpperCase()));
+  $('report-context').textContent = source + ' · ' + new Date(data.generated_at).toLocaleString(language === 'en' ? 'en-IN' : language + '-IN');
+  $('report-inputs').replaceChildren();
+  const termNames = {principal:'Principal',annual_nominal_pct:'Annual nominal interest',months:'Tenure',processing_fee:'Processing fee',fee_tax:'Fee tax'};
+  for (const key of keys) {
+    const value = key === 'months' ? t('{value} months',{value:data.verified[key]}) : key === 'annual_nominal_pct' ? data.verified[key]+'%' : money(data.verified[key]);
+    const item = node('div'); item.append(node('dt',termNames[key]), node('dd',value)); $('report-inputs').append(item);
+  }
   $('metrics').replaceChildren();
   for (const [name, value] of [['Principal', data.verified.principal], ['Cash received', m.net_disbursed], ['Total repayments', m.total_repayment], ['Borrowing cost', m.borrowing_cost]]) {
     const metric = node('div', undefined, 'metric');
@@ -133,7 +151,7 @@ async function analyze() {
     data.source = $('adfile').files.length ? 'Uploaded document pair' : currentCase;
     data.generated_at = new Date().toISOString();
     renderReport(data);
-  } catch (e) { status('Analysis failed: {error}', {error: e.message}); }
+  } catch (e) { status('Analysis failed: {error}', {error: e.message}); offerRetry(analyze); }
   finally { busy(false); }
 }
 $('scenario').addEventListener('change', async e => {
@@ -144,6 +162,7 @@ for (const id of ['adfile', 'kfsfile']) $(id).addEventListener('change', () => {
   invalidate(true); downloadLinks(); status('Documents changed. Select both PDFs and extract again.');
 });
 keys.forEach(key => $(key).addEventListener('input', () => { invalidate(); status('Terms changed. Calculate again to update the report.'); }));
+$('retry').addEventListener('click', () => retryAction?.());
 $('extract').addEventListener('click', extract);
 $('analyze').addEventListener('click', analyze);
 $('print').addEventListener('click', () => {
@@ -159,9 +178,10 @@ async function init() {
   busy(true);
   try {
     const cases = await request('/api/scenarios');
+    $('scenario').replaceChildren();
     cases.forEach(c => { const option = node('option', c.label); option.value = c.id; $('scenario').append(option); });
     $('scenario').value = currentCase; downloadLinks(); await extract();
-  } catch (e) { status('Unable to load examples. Reload the page to retry.'); }
+  } catch (e) { status('Unable to load examples. Reload the page to retry.'); offerRetry(init); }
   finally { busy(false); }
 }
 document.addEventListener('loanmirror:language', () => {

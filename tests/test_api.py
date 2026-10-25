@@ -71,3 +71,15 @@ def test_invalid_financial_inputs(key,value):
     payload={'case_id':'03_fee_conflict','principal':10000,'annual_nominal_pct':12,'months':3,'processing_fee':500,'fee_tax':90}
     payload[key]=value
     assert client.post('/api/analyze',data=payload).status_code in (400,422)
+
+
+def test_frontend_assets_are_versioned_and_not_cached():
+    import hashlib
+    from pathlib import Path
+    root=Path(__file__).parents[1]
+    page=client.get('/compare')
+    assert page.headers['cache-control']=='no-store'
+    for name in ('app.js','i18n.js'):
+        version=hashlib.sha256((root/name).read_bytes()).hexdigest()[:12]
+        assert f'/{name}?v={version}' in page.text
+        assert client.get('/'+name).headers['cache-control']=='no-store'

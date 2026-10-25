@@ -1,0 +1,18 @@
+const {chromium}=require('playwright');const assert=require('node:assert/strict');
+(async()=>{const b=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});try{
+const base=process.env.BASE_URL||'http://127.0.0.1:8006';const p=await b.newPage({viewport:{width:1366,height:1000},reducedMotion:'reduce'});const errors=[];p.on('pageerror',e=>errors.push(e.message));
+await p.goto(base);assert.match(await p.locator('h1').innerText(),/Understand the offer/);await p.selectOption('#language','hi');assert.match(await p.locator('h1').innerText(),/प्रस्ताव/);
+await p.locator('.home-cta').first().click();await p.waitForFunction(()=>!document.querySelector('#analyze').disabled);assert.equal(await p.locator('#language').inputValue(),'hi');
+await p.selectOption('#language','en');await p.locator('#principal').fill('10000.50');await p.locator('#processing_fee').fill('500.25');await p.locator('#fee_tax').fill('90.05');
+await p.click('#analyze');await p.waitForSelector('#results:not([hidden])');assert.match(await p.locator('#metrics').innerText(),/9,410.20/);assert.match(await p.locator('#report-inputs').innerText(),/500.25/);
+await p.route('**/api/analyze',route=>route.fulfill({status:503,contentType:'text/html',body:'<html>Service unavailable</html>'}));await p.click('#analyze');await p.waitForSelector('#retry:not([hidden])');assert.match(await p.locator('#status').innerText(),/unexpected response/);assert.equal(await p.locator('#analyze').isEnabled(),true);
+await p.unroute('**/api/analyze');await p.click('#retry');await p.waitForSelector('#results:not([hidden])');assert.match(await p.locator('#metrics').innerText(),/9,410.20/);
+await p.route('**/api/scenarios',r=>r.abort());await p.reload();await p.waitForSelector('#retry:not([hidden])');await p.unroute('**/api/scenarios');await p.click('#retry');await p.waitForFunction(()=>!document.querySelector('#analyze').disabled);assert.equal(await p.locator('#scenario option').count(),15);
+await p.click('#analyze');await p.waitForSelector('#results:not([hidden])');await p.emulateMedia({media:'print'});assert.equal(await p.locator('#report-inputs').isVisible(),true);await p.emulateMedia({media:'screen'});
+for(const route of ['','/compare']){await p.goto(base+route);if(route)await p.waitForFunction(()=>!document.querySelector('#analyze').disabled);for(const lang of ['en','hi','mr']){await p.selectOption('#language',lang);for(const width of [320,390,768,1366]){await p.setViewportSize({width,height:900});assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),route+' '+lang+' '+width);}}}
+await p.goto(base);await p.selectOption('#language','en');await p.setViewportSize({width:1366,height:1000});await p.screenshot({path:'/workspace/LoanMirror-welcome-page.png',fullPage:true});
+assert.deepEqual(errors,[]);
+// Simulate a hanging request and advance the browser timer without waiting 45 real seconds.
+await p.goto(base+'/compare');await p.waitForFunction(()=>!document.querySelector('#analyze').disabled);await p.clock.install();await p.route('**/api/analyze',()=>{});const requested=p.waitForRequest('**/api/analyze');await p.click('#analyze');await requested;await p.clock.fastForward(45001);await p.waitForSelector('#retry:not([hidden])');assert.match(await p.locator('#status').innerText(),/timed out/);assert.equal(await p.locator('#analyze').isEnabled(),true);
+console.log('Public workflow checks passed: home/tool navigation, language persistence, cents, HTML errors, retry, startup recovery, report terms, 24 responsive combinations, timeout.');
+}finally{await b.close()}})().catch(e=>{console.error(e);process.exit(1)});

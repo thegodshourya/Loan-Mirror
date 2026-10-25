@@ -327,11 +327,11 @@ const translations = {
     "hi": "दोनों दस्तावेज़ों में {value} है।",
     "mr": "दोन्ही कागदपत्रांत {value} आहे."
   },
-  "Not stated in advertisement; no contradiction inferred.": {
+  "No comparable claim extracted from advertisement; no contradiction inferred.": {
     "hi": "विज्ञापन में नहीं बताया गया; कोई विरोधाभास नहीं माना गया।",
     "mr": "जाहिरातीत नमूद नाही; विरोधाभास गृहीत धरलेला नाही."
   },
-  "Not found in KFS; verify manually.": {
+  "No comparable value extracted from KFS; verify manually.": {
     "hi": "KFS में नहीं मिला; स्वयं जाँचें।",
     "mr": "KFS मध्ये सापडले नाही; स्वतः तपासा."
   },
@@ -416,6 +416,8 @@ Object.assign(translations, {
   'Fictional example': {hi:'काल्पनिक उदाहरण', mr:'काल्पनिक उदाहरण'},
   'Skip to comparison': {hi:'तुलना पर जाएँ', mr:'तुलनेकडे जा'}
 });
+Object.assign(translations, {"Try again": {"hi": "फिर प्रयास करें", "mr": "पुन्हा प्रयत्न करा"}, "Uploaded document pair": {"hi": "अपलोड किए गए दस्तावेज़", "mr": "अपलोड केलेली कागदपत्रे"}, "Request timed out. Please try again.": {"hi": "अनुरोध का समय समाप्त हुआ। फिर प्रयास करें।", "mr": "विनंतीची वेळ संपली. पुन्हा प्रयत्न करा."}, "The service returned an unexpected response. Please try again.": {"hi": "सेवा से अप्रत्याशित उत्तर मिला। फिर प्रयास करें।", "mr": "सेवेकडून अनपेक्षित प्रतिसाद आला. पुन्हा प्रयत्न करा."}, "Upload request is too large. Use PDFs up to 5 MB each.": {"hi": "अपलोड बहुत बड़ा है। प्रत्येक PDF अधिकतम 5 MB रखें।", "mr": "अपलोड खूप मोठा आहे. प्रत्येक PDF जास्तीत जास्त 5 MB ठेवा."}, "Unable to read this PDF. Use an unlocked digital-text PDF of at most 50 pages.": {"hi": "PDF पढ़ा नहीं जा सका। बिना पासवर्ड का अधिकतम 50 पन्नों वाला डिजिटल टेक्स्ट PDF दें।", "mr": "PDF वाचता आला नाही. पासवर्ड नसलेला जास्तीत जास्त 50 पानांचा डिजिटल मजकूर PDF द्या."}, "PDF processing took too long. Try a simpler digital-text PDF.": {"hi": "PDF प्रसंस्करण में अधिक समय लगा। सरल डिजिटल टेक्स्ट PDF आजमाएँ।", "mr": "PDF प्रक्रियेला जास्त वेळ लागला. सोपा डिजिटल मजकूर PDF वापरा."}, "Document processing is busy. Please try again shortly.": {"hi": "दस्तावेज़ प्रसंस्करण व्यस्त है। थोड़ी देर में फिर प्रयास करें।", "mr": "कागदपत्र प्रक्रिया व्यस्त आहे. थोड्या वेळाने पुन्हा प्रयत्न करा."}, "Amounts must be finite, nonnegative and at most INR 1 trillion; principal must be positive": {"hi": "रकम शून्य या अधिक और अधिकतम 1 लाख करोड़ रुपये हो; मूलधन शून्य से अधिक होना चाहिए।", "mr": "रक्कम शून्य किंवा अधिक आणि जास्तीत जास्त 1 लाख कोटी रुपये असावी; मुद्दल शून्यापेक्षा अधिक असावे."}, "Use at most two decimal places for monetary amounts": {"hi": "रकम में अधिकतम दो दशमलव स्थान उपयोग करें।", "mr": "रकमेसाठी जास्तीत जास्त दोन दशांश स्थाने वापरा."}, "No comparable claim extracted from advertisement; no contradiction inferred.": {"hi": "विज्ञापन से तुलनीय दावा नहीं निकला; कोई विरोधाभास नहीं माना गया।", "mr": "जाहिरातीतून तुलनायोग्य दावा काढता आला नाही; विरोधाभास गृहीत धरलेला नाही."}, "No comparable value extracted from KFS; verify manually.": {"hi": "KFS से तुलनीय मान नहीं निकला; स्वयं जाँचें।", "mr": "KFS मधून तुलनायोग्य मूल्य काढता आले नाही; स्वतः तपासा."}});
+Object.assign(translations, {"Start comparing": {"hi": "तुलना शुरू करें", "mr": "तुलना सुरू करा"}, "Understand the offer. Check the terms.": {"hi": "प्रस्ताव समझें। शर्तें जाँचें।", "mr": "प्रस्ताव समजून घ्या. अटी तपासा."}, "LoanMirror compares a loan advertisement with its Key Facts Statement, shows the source evidence, and calculates what you receive and repay.": {"hi": "LoanMirror ऋण विज्ञापन और मुख्य तथ्य विवरण की तुलना करता है, स्रोत साक्ष्य दिखाता है और मिलने तथा चुकाने वाली रकम की गणना करता है।", "mr": "LoanMirror कर्जाची जाहिरात आणि मुख्य तथ्य विवरण यांची तुलना करते, मूळ पुरावे दाखवते आणि मिळणाऱ्या व परतफेडीच्या रकमेची गणना करते."}, "How it works": {"hi": "यह कैसे काम करता है", "mr": "हे कसे काम करते"}, "01 / Bring both documents": {"hi": "01 / दोनों दस्तावेज़ चुनें", "mr": "01 / दोन्ही कागदपत्रे निवडा"}, "Use one of 15 fictional examples, or upload your advertisement and loan terms as digital-text PDFs.": {"hi": "15 काल्पनिक उदाहरणों में से चुनें, या विज्ञापन और ऋण शर्तों के डिजिटल टेक्स्ट PDF अपलोड करें।", "mr": "15 काल्पनिक उदाहरणांपैकी निवडा किंवा जाहिरात आणि कर्जाच्या अटींचे डिजिटल मजकूर PDF अपलोड करा."}, "02 / Verify the extracted terms": {"hi": "02 / निकाली गई शर्तें जाँचें", "mr": "02 / काढलेल्या अटी तपासा"}, "Check the source lines and edit the figures. Missing or conflicting values stay blank for you to verify.": {"hi": "स्रोत की पंक्तियाँ जाँचें और संख्याएँ बदलें। गायब या विरोधी मान आपकी जाँच के लिए खाली रहते हैं।", "mr": "मूळ ओळी तपासा आणि आकडे बदला. नसलेली किंवा विरोधी मूल्ये तुमच्या पडताळणीसाठी रिकामी राहतात."}, "03 / See the real cash flow": {"hi": "03 / रकम का पूरा विवरण देखें", "mr": "03 / संपूर्ण रोख प्रवाह पाहा"}, "See cash received, repayments, and borrowing cost. Review document mismatches and save your report.": {"hi": "मिलने वाली रकम, भुगतान और ऋण लागत देखें। दस्तावेज़ों के अंतर जाँचें और रिपोर्ट सहेजें।", "mr": "मिळणारी रक्कम, परतफेड आणि कर्जाचा खर्च पाहा. कागदपत्रांतील फरक तपासा आणि अहवाल जतन करा."}, "What to know before you start": {"hi": "शुरू करने से पहले जानें", "mr": "सुरू करण्यापूर्वी जाणून घ्या"}, "Use fictional or redacted documents. Extraction supports specific text layouts, not scanned PDFs. Borrowing cost is not regulatory APR, and a mismatch is not a fraud verdict.": {"hi": "काल्पनिक या संवेदनशील जानकारी हटाए गए दस्तावेज़ उपयोग करें। जानकारी केवल कुछ टेक्स्ट प्रारूपों से निकाली जाती है, स्कैन किए PDF से नहीं। ऋण लागत नियामकीय APR नहीं है और अंतर धोखाधड़ी का निर्णय नहीं है।", "mr": "काल्पनिक किंवा संवेदनशील माहिती काढलेली कागदपत्रे वापरा. माहिती विशिष्ट मजकूर मांडणीतून काढली जाते, स्कॅन केलेल्या PDF मधून नाही. कर्जाचा खर्च नियामक APR नाही आणि फरक म्हणजे फसवणुकीचा निर्णय नाही."}, "No account or API key needed.": {"hi": "खाते या API कुंजी की आवश्यकता नहीं।", "mr": "खाते किंवा API की आवश्यक नाही."}, "Example only: INR 10,000 principal, 12% nominal annual rate, 3 months, INR 500 fee and INR 90 tax.": {"hi": "केवल उदाहरण: ₹10,000 मूलधन, 12% वार्षिक नाममात्र दर, 3 महीने, ₹500 शुल्क और ₹90 कर।", "mr": "फक्त उदाहरण: ₹10,000 मुद्दल, 12% वार्षिक नाममात्र दर, 3 महिने, ₹500 शुल्क आणि ₹90 कर."}});
 let language = 'en';
 try { const saved = localStorage.getItem('loanmirror-language'); if (['en','hi','mr'].includes(saved)) language = saved; } catch {}
 function t(key, values = {}) {
@@ -439,8 +441,8 @@ function animateElement(el, frames, options = {}) {
   const animation = el.animate(frames, {duration: 380, easing: 'cubic-bezier(.2,.7,.2,1)', ...options});
   activeMotion.set(el, animation);
 }
-function stopMotion() { document.getAnimations().forEach(animation => animation.cancel()); }
-reducedMotion.addEventListener('change', event => { if (event.matches) stopMotion(); });
+function stopMotion() { document.getAnimations?.().forEach(animation => animation.cancel()); }
+if (reducedMotion.addEventListener) reducedMotion.addEventListener('change', event => { if (event.matches) stopMotion(); });
 window.addEventListener('beforeprint', stopMotion);
 function revealElements(elements) {
   elements.forEach((el, index) => animateElement(el, [
@@ -449,7 +451,7 @@ function revealElements(elements) {
   ], {delay: Math.min(index, 4) * 45}));
 }
 function languageMotion() {
-  document.querySelectorAll('.hero-copy, .hero-example, .workspace, .language-note, .foot').forEach(el => {
+  document.querySelectorAll('.hero-copy, .hero-example, .workspace, .language-note, .foot, .home-content').forEach(el => {
     animateElement(el, [
       {opacity: .78, filter: 'blur(2px)', transform: 'translateY(3px)'},
       {opacity: 1, filter: 'blur(0px)', transform: 'translateY(0)'}
@@ -462,7 +464,7 @@ if ('IntersectionObserver' in window) {
     revealElements(visible.map(entry => entry.target));
     visible.forEach(entry => observer.unobserve(entry.target));
   }, {threshold: .12});
-  document.querySelectorAll('.hero-copy, .hero-example, .scenario-row, .doc, .fields').forEach(el => observer.observe(el));
+  document.querySelectorAll('.hero-copy, .hero-example, .scenario-row, .doc, .fields, .home-steps .surface').forEach(el => observer.observe(el));
 }
 document.querySelectorAll('details').forEach(el => el.addEventListener('toggle', () => {
   if (el.open) revealElements([...el.querySelectorAll('.evidence')]);

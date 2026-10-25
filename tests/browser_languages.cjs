@@ -7,7 +7,7 @@ const assert = require('node:assert/strict');
   try {
     const page = await browser.newPage({viewport:{width:1280,height:900}});
     const errors = []; page.on('pageerror', e => errors.push(e.message));
-    await page.goto(process.env.BASE_URL || 'http://127.0.0.1:8001');
+    await page.goto(process.env.BASE_URL || 'http://127.0.0.1:8001/compare');
     await page.waitForFunction(() => !document.querySelector('#analyze').disabled);
     await page.click('#analyze'); await page.waitForSelector('#results:not([hidden])');
     const originalEvidence = await page.locator('#evidence pre').allTextContents();
