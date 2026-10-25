@@ -75,3 +75,11 @@ Use the language selector in the header to choose English, Hindi or Marathi. The
 Source PDFs and verbatim evidence remain in their original language. This feature does not add extraction support for Hindi or Marathi PDFs. Downloaded JSON retains stable API field names and includes `interface_language`.
 
 Browser regression check (with Playwright and its Chromium installed): start the app on port 8001, then run `node tests/browser_languages.cjs`. Set `BASE_URL` or `CHROMIUM_PATH` for another URL or an installed Chromium executable.
+
+Language loading resilience: the homepage uses content-versioned script URLs and no-store responses to avoid mixing scripts across deployments. The language selector initializes independently of calculation code and remains available while requests load.
+
+## Refined design update
+
+The web interface now follows the Superdesign concept: forest green and ivory, serif headings, a clearly labelled fictional example, grouped form controls, and a high-contrast cost summary. The layout was checked in English, Hindi and Marathi at widths of 320, 390, 768 and 1440 pixels. All display copy remains local and the app loads no external font or design framework. Original PDF excerpts remain verbatim.
+
+The visual concept is available at https://superdesign.dev/teams/b71eabff-859c-4b23-bba3-ce85f044a439/projects/00be3879-6092-470a-8947-acc3fe4cba87 . This is the design canvas; the working implementation is in this repository.

@@ -27,7 +27,7 @@ function invalidate(clearFields = false) {
   $('analyze').disabled = !extracted;
 }
 function busy(value) {
-  document.querySelectorAll('input, select, button').forEach(el => el.disabled = value);
+  document.querySelectorAll('input, select:not(#language), button').forEach(el => el.disabled = value);
   if (!value) $('analyze').disabled = !extracted;
 }
 function formData() {
@@ -158,12 +158,8 @@ async function init() {
   } catch (e) { status('Unable to load examples. Reload the page to retry.'); }
   finally { busy(false); }
 }
-$('language').addEventListener('change', e => {
-  language = e.target.value;
-  try { localStorage.setItem('loanmirror-language', language); } catch {}
-  localizePage();
+document.addEventListener('loanmirror:language', () => {
   if (report) renderReport(report, false);
   else status(lastStatus.key, lastStatus.values);
 });
-localizePage();
 init();

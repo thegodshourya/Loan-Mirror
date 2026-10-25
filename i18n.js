@@ -3,9 +3,9 @@ const translations = {
     "hi": "भाषा",
     "mr": "भाषा"
   },
-  "Compare a loan ↗": {
-    "hi": "ऋण की तुलना करें ↗",
-    "mr": "कर्जाची तुलना करा ↗"
+  "Compare a loan →": {
+    "hi": "ऋण की तुलना करें →",
+    "mr": "कर्जाची तुलना करा →"
   },
   "LoanMirror — Know the real cost": {
     "hi": "LoanMirror — असली लागत जानें",
@@ -67,9 +67,9 @@ const translations = {
     "hi": "केवल डिजिटल टेक्स्ट वाले PDF। स्कैन की गई तस्वीरें नहीं।",
     "mr": "फक्त डिजिटल मजकूर असलेले PDF. स्कॅन केलेली चित्रे नाहीत."
   },
-  "View sample advertisement ↗": {
-    "hi": "उदाहरण विज्ञापन देखें ↗",
-    "mr": "नमुना जाहिरात पाहा ↗"
+  "View sample advertisement →": {
+    "hi": "उदाहरण विज्ञापन देखें →",
+    "mr": "नमुना जाहिरात पाहा →"
   },
   "Loan terms / KFS": {
     "hi": "ऋण की शर्तें / KFS",
@@ -79,9 +79,9 @@ const translations = {
     "hi": "संबंधित शर्तें अपलोड करें; दोनों फ़ाइलें आवश्यक हैं।",
     "mr": "संबंधित अटी अपलोड करा; दोन्ही फाइल आवश्यक आहेत."
   },
-  "View sample loan terms ↗": {
-    "hi": "उदाहरण की ऋण शर्तें देखें ↗",
-    "mr": "नमुना कर्जाच्या अटी पाहा ↗"
+  "View sample loan terms →": {
+    "hi": "उदाहरण की ऋण शर्तें देखें →",
+    "mr": "नमुना कर्जाच्या अटी पाहा →"
   },
   "Extract document fields": {
     "hi": "दस्तावेज़ से जानकारी निकालें",
@@ -412,6 +412,10 @@ const translations = {
     "mr": "15 जाहिरातीच्या कालावधीत फरक"
   }
 };
+Object.assign(translations, {
+  'Fictional example': {hi:'काल्पनिक उदाहरण', mr:'काल्पनिक उदाहरण'},
+  'Skip to comparison': {hi:'तुलना पर जाएँ', mr:'तुलनेकडे जा'}
+});
 let language = 'en';
 try { const saved = localStorage.getItem('loanmirror-language'); if (['en','hi','mr'].includes(saved)) language = saved; } catch {}
 function t(key, values = {}) {
@@ -424,3 +428,12 @@ function localizePage() {
   document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
   document.getElementById('language').value = language;
 }
+
+// The language control works independently of API startup and calculation code.
+document.getElementById('language').addEventListener('change', event => {
+  language = event.target.value;
+  try { localStorage.setItem('loanmirror-language', language); } catch {}
+  localizePage();
+  document.dispatchEvent(new Event('loanmirror:language'));
+});
+localizePage();

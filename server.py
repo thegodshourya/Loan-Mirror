@@ -3,6 +3,7 @@ Proof of concept. Processes documents in memory; synthetic test PDFs only.
 """
 from pathlib import Path
 import json
+import hashlib
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import HTMLResponse, FileResponse
 from loanmirror.engine import LoanTerms, loan_math, evaluate_claims
@@ -19,7 +20,7 @@ async def response_headers(request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "no-referrer"
-    if request.url.path.startswith('/api/'):
+    if request.url.path.startswith('/api/') or request.url.path in ('/', '/app.js', '/i18n.js'):
         response.headers["Cache-Control"] = "no-store"
     return response
 
@@ -29,7 +30,11 @@ def health():
 
 @app.get('/', response_class=HTMLResponse)
 def home():
-    return (ROOT/'index.html').read_text(encoding='utf8')
+    html = (ROOT/'index.html').read_text(encoding='utf8')
+    for filename in ('i18n.js', 'app.js'):
+        version = hashlib.sha256((ROOT/filename).read_bytes()).hexdigest()[:12]
+        html = html.replace(f'src="/{filename}"', f'src="/{filename}?v={version}"')
+    return html
 
 @app.get('/app.js')
 def javascript():
