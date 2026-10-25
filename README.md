@@ -67,3 +67,11 @@ Pitch materials from the supplied package are in `docs/`. Their event and resear
 ## Validation in this workspace
 
 35 automated tests passed, plus Chromium checks of the sample flow, manual edits, file-upload pairing, report downloads, print rendering and a 390 px mobile layout. The live HTTP calculation and health endpoint passed. Docker image download succeeded, but the image build could not install packages because this environment's Docker build network could not resolve the package index; the Docker deployment remains unverified. Render deployment requires your hosting account and has not been performed.
+
+## Interface languages
+
+Use the language selector in the header to choose English, Hindi or Marathi. The choice is remembered on this browser when local storage is available. Switching language preserves the entered terms and current report. Labels, scenarios, application validation messages, findings and the printable report are translated locally, without any translation service or API key. Browser-native file-picker controls follow the browser/OS language.
+
+Source PDFs and verbatim evidence remain in their original language. This feature does not add extraction support for Hindi or Marathi PDFs. Downloaded JSON retains stable API field names and includes `interface_language`.
+
+Browser regression check (with Playwright and its Chromium installed): start the app on port 8001, then run `node tests/browser_languages.cjs`. Set `BASE_URL` or `CHROMIUM_PATH` for another URL or an installed Chromium executable.

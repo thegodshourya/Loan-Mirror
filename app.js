@@ -1,14 +1,22 @@
 const $ = id => document.getElementById(id);
 const keys = ['principal', 'annual_nominal_pct', 'months', 'processing_fee', 'fee_tax'];
 const money = n => '₹' + Number(n).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+let lastStatus = {key: 'Select a sample to begin.', values: {}};
 let currentCase = '03_fee_conflict', extracted = false, report = null;
 function node(tag, text, className) {
   const el = document.createElement(tag);
-  if (text !== undefined) el.textContent = text;
+  if (text !== undefined) {
+    if (tag !== 'pre' && translations[text]) el.dataset.i18n = text;
+    el.textContent = tag === 'pre' ? text : t(text);
+  }
   if (className) el.className = className;
   return el;
 }
-function status(text) { $('status').textContent = text; }
+function status(key, values = {}) {
+  lastStatus = {key, values};
+  $('status').removeAttribute('data-i18n');
+  $('status').textContent = t(key, {...values, ...(values.error ? {error: t(values.error)} : {})});
+}
 function invalidate(clearFields = false) {
   report = null; $('results').hidden = true;
   if (clearFields) {
@@ -34,7 +42,9 @@ function formData() {
   return form;
 }
 async function request(path, form) {
-  const response = await fetch(path, form ? {method: 'POST', body: form} : {});
+  let response;
+  try { response = await fetch(path, form ? {method: 'POST', body: form} : {}); }
+  catch { throw Error('Network request failed. Please try again.'); }
   const data = await response.json();
   if (!response.ok) throw Error(typeof data.detail === 'string' ? data.detail : 'Check the required numeric fields and try again.');
   return data;
@@ -60,11 +70,11 @@ async function extract() {
     $('source-evidence').replaceChildren(evidenceBox('Advertisement', data.ad_evidence), evidenceBox('Loan terms / KFS', data.term_evidence));
     extracted = true;
     const missing = keys.filter(k => data.terms[k] === undefined);
-    status(missing.length ? `${missing.length} fields could not be extracted. Enter them from your document; no values have been assumed.` : 'Fields extracted. Verify the figures and evidence before comparing.');
-  } catch (e) { status('Could not extract: ' + e.message); }
+    status(missing.length ? '{count} fields could not be extracted. Enter them from your document; no values have been assumed.' : 'Fields extracted. Verify the figures and evidence before comparing.', {count: missing.length});
+  } catch (e) { status('Could not extract: {error}', {error: e.message}); }
   finally { busy(false); }
 }
-function renderReport(data) {
+function renderReport(data, scroll = true) {
   report = data;
   $('results').hidden = false;
   const m = data.derived;
@@ -74,7 +84,7 @@ function renderReport(data) {
     metric.append(node('div', name, 'label'), node('strong', money(value)));
     $('metrics').append(metric);
   }
-  $('explanation').textContent = `Estimated monthly EMI: ${money(m.emi)} over ${data.verified.months} months. Assumes fixed reducing-balance interest, equal month-end payments and upfront fee deduction. Borrowing cost is not the regulatory APR.`;
+  $('explanation').textContent = t('Estimated monthly EMI: {emi} over {months} months. Assumes fixed reducing-balance interest, equal month-end payments and upfront fee deduction. Borrowing cost is not the regulatory APR.', {emi: money(m.emi), months: data.verified.months});
   const bar = node('div', undefined, 'cost-bar'); bar.setAttribute('aria-hidden', 'true');
   const cash = node('span'), cost = node('span');
   cash.style.width = (m.net_disbursed / m.total_repayment * 100) + '%';
@@ -83,22 +93,33 @@ function renderReport(data) {
   for (const finding of data.findings) {
     const el = node('div', undefined, 'finding ' + finding.status);
     const labels = {conflict: 'DOCUMENT MISMATCH', match: 'CONSISTENT', not_claimed: 'NOT CLAIMED', unverified: 'UNVERIFIED'};
-    el.append(node('strong', labels[finding.status] + ' · ' + finding.field), node('span', finding.detail));
+    const field = {'Annual nominal interest': 'annual_nominal_pct', Tenure: 'months', 'Processing fee': 'processing_fee'}[finding.field];
+    const format = value => field === 'months' ? t('{value} months', {value}) : field === 'processing_fee' ? money(value) : value + '%';
+    const detail = finding.status === 'conflict' ? t('Advertised {ad}; KFS {kfs}.', {ad: format(data.advertisement[field]), kfs: format(data.extracted[field])})
+      : finding.status === 'match' ? t('Both documents state {value}.', {value: format(data.extracted[field])})
+      : t(finding.detail);
+    el.append(node('strong', t(labels[finding.status]) + ' · ' + t(finding.field)), node('span', detail));
     $('findings').append(el);
   }
   $('overrides').hidden = !Object.keys(data.overrides).length;
   $('overrides').replaceChildren(node('strong', 'Manually verified figures used for the calculation'));
   for (const [key, value] of Object.entries(data.overrides)) {
-    $('overrides').append(node('p', `${key.replaceAll('_', ' ')}: extracted ${data.extracted[key] ?? 'not found'} → entered ${value}`));
+    $('overrides').append(node('p', t('{field}: extracted {before} → entered {after}', {field: t({principal:'Principal',annual_nominal_pct:'Annual nominal interest',months:'Tenure',processing_fee:'Processing fee',fee_tax:'Fee tax'}[key]), before: data.extracted[key] ?? t('not found'), after: value})));
   }
   $('overrides').append(node('p', 'Document findings compare the extracted source text. Your edited figures affect the cash-flow calculation and are listed here separately.'));
   $('evidence').replaceChildren(evidenceBox('Advertisement', data.ad_evidence), evidenceBox('Loan terms / KFS', data.kfs_evidence));
   status('Report ready. Review any mismatches with your lender.');
-  $('results').scrollIntoView({behavior: 'smooth', block: 'start'});
+  if (scroll) $('results').scrollIntoView({behavior: 'smooth', block: 'start'});
 }
 async function analyze() {
   if (!extracted) return;
-  for (const key of keys) if (!$(key).reportValidity()) return;
+  for (const key of keys) {
+    if (!$(key).checkValidity()) {
+      status('Check the required numeric fields and try again.');
+      $(key).focus();
+      return;
+    }
+  }
   invalidate(); busy(true); status('Calculating the cost…');
   try {
     const form = formData(); keys.forEach(key => form.append(key, $(key).value));
@@ -106,7 +127,7 @@ async function analyze() {
     data.source = $('adfile').files.length ? 'Uploaded document pair' : currentCase;
     data.generated_at = new Date().toISOString();
     renderReport(data);
-  } catch (e) { status('Analysis failed: ' + e.message); }
+  } catch (e) { status('Analysis failed: {error}', {error: e.message}); }
   finally { busy(false); }
 }
 $('scenario').addEventListener('change', async e => {
@@ -124,7 +145,7 @@ $('print').addEventListener('click', () => {
 });
 $('download').addEventListener('click', () => {
   if (!report) return;
-  const url = URL.createObjectURL(new Blob([JSON.stringify(report, null, 2)], {type: 'application/json'}));
+  const url = URL.createObjectURL(new Blob([JSON.stringify({...report, interface_language: language}, null, 2)], {type: 'application/json'}));
   const link = node('a'); link.href = url; link.download = 'LoanMirror-report.json'; link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
@@ -137,4 +158,12 @@ async function init() {
   } catch (e) { status('Unable to load examples. Reload the page to retry.'); }
   finally { busy(false); }
 }
+$('language').addEventListener('change', e => {
+  language = e.target.value;
+  try { localStorage.setItem('loanmirror-language', language); } catch {}
+  localizePage();
+  if (report) renderReport(report, false);
+  else status(lastStatus.key, lastStatus.values);
+});
+localizePage();
 init();

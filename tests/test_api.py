@@ -18,6 +18,7 @@ def test_api_direct_mismatch():
     result=client.post('/api/analyze',data=payload)
     assert result.status_code==200
     data=result.json()
+    assert data['advertisement']['processing_fee']==0
     assert data['derived']['net_disbursed']==9410
     assert data['derived']['total_repayment']==10200.66
     assert any(f['status']=='conflict' and f['field']=='Processing fee' for f in data['findings'])

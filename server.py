@@ -35,6 +35,10 @@ def home():
 def javascript():
     return FileResponse(ROOT/'app.js', media_type='text/javascript')
 
+@app.get('/i18n.js')
+def translations():
+    return FileResponse(ROOT/'i18n.js', media_type='text/javascript')
+
 @app.get('/api/scenarios')
 def scenarios():
     return [{'id':name,'label':name.replace('_',' ').title()} for name in SAMPLES]
@@ -79,7 +83,7 @@ async def analyze(case_id:str=Form(...),principal:float=Form(...),annual_nominal
     try:
         m=loan_math(LoanTerms(**effective))
     except (ValueError, OverflowError) as exc:raise HTTPException(400,str(exc))
-    return {'verified':effective,
+    return {'verified':effective, 'advertisement':ad,
             'derived':{'emi':round(m.scheduled_emi,2),'total_repayment':round(m.total_repayments,2),
                        'net_disbursed':round(m.net_proceeds,2),'borrowing_cost':round(m.borrowing_cost,2)},
             'findings':evaluate_claims(ad,extracted), 'input_comparison':evaluate_claims(ad,effective),
